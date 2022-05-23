@@ -1,7 +1,7 @@
-%% Muhammed Erkmen
-%% Istanbul Technical University
-%% 040170049
-%% FIR Bandpass Filter Design 
+%Muhammed Erkmen
+% Istanbul Technical University
+% 040170049
+% FIR Bandpass Filter Design 
 
 clc;
 %Passband : 900-1000 Hz
@@ -57,20 +57,20 @@ end
 h = hn.*wn;
 
 
-%%% HDL Coder Easy Coding Part for copy pasting.
+% HDL Coder Easy Coding Part for copy pasting.
 
-%%% Y calculating 
+% Y calculating 
 %for i=1:160
    %fprintf('m%d = ud%d * h%d;\n', [i,i,i]);
 %end
 
-%%Shifting 
+%Shifting 
 %for i=1:160
     %fprintf('ud%d = ud%d;\n', [161-i,160-i]);
 %end
 
 
-%% Ploting 
+% Ploting 
 %freqz(hn);
 %freqz(wn);
 %freqz(h);
