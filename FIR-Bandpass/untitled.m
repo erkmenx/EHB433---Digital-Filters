@@ -1,111 +1,78 @@
-%
-% FIR FILTRE TASARIMI
-%
-% FIR derecesi a?a??da belirlenir. ?ift olmal? !
-Filtre_Tap=124;
-Filtre_Tap_Yarim=Filtre_Tap/2;
-%
-%
-% ALCAK GEC?REN F?LTRE 
-%
-Alcak_Kesim_Frekans=pi/3;
-%
-for i=1:1:Filtre_Tap+1,
-    Filtre_Alcak_Geciren(i)=(sin((i-1-Filtre_Tap_Yarim)*Alcak_Kesim_Frekans))/((i-1-Filtre_Tap_Yarim)*pi);
+%% Muhammed Erkmen
+%% Istanbul Technical University
+%% 040170049
+%% FIR Bandpass Filter Design 
+
+clc;
+%Passband : 900-1000 Hz
+%Stop Frequencies : 800,1100 Hz
+%Sampling frequency is 4kHz:
+fs = 4000;
+%Passband
+fpass1 = 900;
+fpass2 = 1000;
+%Stopband
+fstop1 = 800;
+fstop2 = 1100;
+%Düşüş parametreleri(dB):
+Rp = 3;
+Rs = 40;
+%Frequency Mapping
+wstop1 = 2*pi*fstop1/fs;
+wstop2=  2*pi*fstop2/fs;
+wpass1 = 2*pi*fpass1/fs;
+wpass2=  2*pi*fpass2/fs;
+%∆w calculation
+deltaw1 = (wstop1-wpass1);
+deltaw2 = (wstop2-wpass2);
+% Sigma Calculation
+sp = (10^(Rp/20)-1)/(1+10^(Rp/20)); %δp = 0.0144
+ss = (1+sp)/(10^(Rs/20));           %δs = 0.0117
+% δmin = 0.0117
+smin = 0.0117;
+
+% A = -20*log10(SigmaMin);
+A = -20*log10(smin);
+
+% Choosed hann window for implementation
+% Finding L from hann window formula
+L = (8*pi/deltaw2); 
+N=L-1;
+
+% For Bandpass, the hn[n] function is given that:
+%hn[n] = sin(((wpass1+wstop1)/2)*(i-N/2))/(pi*(i-N/2)) - sin(((wpass2+wstop2)/2)*(i-N/2))/(pi*(i-N/2));
+%hn: ideal bp filter
+hn = ones(160,1);
+for i=1:160
+    hn(i)=sin(((wpass1+wstop1)/2)*(i-N/2))/(pi*(i-N/2)) - sin(((wpass2+wstop2)/2)*(i-N/2))/(pi*(i-N/2));
 end
-Filtre_Alcak_Geciren(Filtre_Tap_Yarim+1)=Alcak_Kesim_Frekans/pi;
-[Filtre_Alcak_Hjw,Filtre_Alcak_w_frekans]=freqz(Filtre_Alcak_Geciren,1,128);
-%
-% Frekans Cevab?
-plot(Filtre_Alcak_w_frekans,abs(Filtre_Alcak_Hjw))
-%%%%%%%%%%%%%%%
-%      YUKSEK GE??REN
-Yuksek_Kesim_Frekansi=pi/7;
-%
-for i=1:1:Filtre_Tap+1
-Filtre_Yuksek_Geciren(i)=(sin((i-1-Filtre_Tap_Yarim)*pi)-sin((i-Filtre_Tap_Yarim)*Yuksek_Kesim_Frekansi))/((i-1-Filtre_Tap_Yarim)*pi);
+
+%wn: hann window coefficients
+wn = ones(160,1);
+for i=1:160
+    wn(i)=(0.5*(1-cos(2*pi*i/N)));
 end
-Filtre_Yuksek_Geciren(Filtre_Tap_Yarim+1)=(pi-Yuksek_Kesim_Frekansi)/pi;
-[Filtre_Yuksek_Hjw,Filtre_Yuksek_w_frekans]=freqz(Filtre_Yuksek_Geciren,1,128);
-%
-% Frekans cevab?
-plot(Filtre_Yuksek_w_frekans,abs(Filtre_Yuksek_Hjw))
-%%%%%%%%%%%%%%
-%
-%    BAND GE??REN FILTRE
-%
-BP_1_Kesim_Frekansi=pi/7;
-BP_2_Kesim_Frekansi=2*pi/7;
+
+%h: Designed Filter
+h = hn.*wn;
 
 
-for i=1:1:Filtre_Tap+1
-Filtre_BP_Geciren(i)=(sin((i-1-Filtre_Tap_Yarim)*BP_2_Kesim_Frekansi)-sin((i-1-Filtre_Tap_Yarim)*BP_1_Kesim_Frekansi))/((i-1-Filtre_Tap_Yarim)*pi);
-end
-Filtre_BP_Geciren(Filtre_Tap_Yarim+1)=(BP_2_Kesim_Frekansi-BP_1_Kesim_Frekansi)/pi;
-[Filtre_BP_Hjw,Filtre_BP_w_frekans]=freqz(Filtre_BP_Geciren,1,128);
-%
-% Frekans cevabi
-plot(Filtre_BP_w_frekans,abs(Filtre_BP_Hjw))
-%
-%
-% band sonduren
-BS_1_Kesim_Frekansi=pi/7;
-BS_2_Kesim_Frekansi=2*pi/7;
+%%% HDL Coder Easy Coding Part for copy pasting.
+
+%%% Y calculating 
+%for i=1:160
+   %fprintf('m%d = ud%d * h%d;\n', [i,i,i]);
+%end
+
+%%Shifting 
+%for i=1:160
+    %fprintf('ud%d = ud%d;\n', [161-i,160-i]);
+%end
 
 
-for i=1:1:Filtre_Tap+1
-Filtre_BS_Geciren(i)=(sin((i-1-Filtre_Tap_Yarim)*pi)-sin((i-1-Filtre_Tap_Yarim)*BS_2_Kesim_Frekansi)+sin((i-1-Filtre_Tap_Yarim)*BS_1_Kesim_Frekansi))/((i-1-Filtre_Tap_Yarim)*pi);
-end
-Filtre_BS_Geciren(Filtre_Tap_Yarim+1)=(pi-BS_2_Kesim_Frekansi+BS_1_Kesim_Frekansi)/pi;
-[Filtre_BS_Hjw,Filtre_BS_w_frekans]=freqz(Filtre_BS_Geciren,1,128);
-%
-% Frekans cevabi
-plot(Filtre_BS_w_frekans,abs(Filtre_BS_Hjw))
-
-%PENCERELER
-%
-%  @hamming        - Hamming window.
-%    @hann           - Hann window
-
-pencere=@hamming;
-%
-% ALCAK GEC?REN F?LTRE  PENCERE 
-%
-w_pencere  = window(pencere,Filtre_Tap+1);
-Filtre_Alcak_Geciren_pencereli=Filtre_Alcak_Geciren.*w_pencere';
-[Filtre_Alcak_Hjw_pencereli,Filtre_Alcak_w_frekans_pencereli]=freqz(Filtre_Alcak_Geciren_pencereli,1,128);
-%
-% pencereli ve penceresiz freksan
- plot(Filtre_Alcak_w_frekans,abs(Filtre_Alcak_Hjw),Filtre_Alcak_w_frekans_pencereli,abs(Filtre_Alcak_Hjw_pencereli))
-%
-% YUKSEK GE??REN 
-%
-Filtre_Yuksek_Geciren_pencereli=Filtre_Yuksek_Geciren.*w_pencere';
-[Filtre_Yuksek_Hjw_pencereli,Filtre_Yuksek_w_frekans_pencereli]=freqz(Filtre_Yuksek_Geciren_pencereli,1,128);
-%
-% pencereli ve penceresiz.
- plot(Filtre_Yuksek_w_frekans,abs(Filtre_Yuksek_Hjw),Filtre_Yuksek_w_frekans_pencereli,abs(Filtre_Yuksek_Hjw_pencereli))
-%%%%%%%%%%%%%%
-%
-%    BAND  GEC?REN F?LTRE
-%
-Filtre_BP_Geciren_pencereli=Filtre_BP_Geciren.*w_pencere';
-%[Filtre_BP_Hjw_pencereli,Filtre_BP_w_frekans_pencereli]=freqz(Filtre_BP_Geciren_pencereli,1,128);
-%
-% pencereli ve penceresiz.
- %plot(Filtre_BP_w_frekans,abs(Filtre_BP_Hjw),Filtre_BP_w_frekans_pencereli,abs(Filtre_BP_Hjw_pencereli))
-%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%
-%
-%    BAND SONDUREN  F?LTRE
-%
-Filtre_BS_Geciren_pencereli=Filtre_BS_Geciren.*w_pencere';
-%[Filtre_BS_Hjw_pencereli,Filtre_BS_w_frekans_pencereli]=freqz(Filtre_BS_Geciren_pencereli,1,128);
-%
-% pencereli ve penceresiz.
-% plot(Filtre_BS_w_frekans,abs(Filtre_BS_Hjw),Filtre_BS_w_frekans_pencereli,abs(Filtre_BS_Hjw_pencereli))
-%%%%%%%%%%%%%%
+%% Ploting 
+%freqz(hn);
+%freqz(wn);
+%freqz(h);
 
 
- 
