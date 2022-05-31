@@ -1,0 +1,3 @@
+QUESTION1A.slx -> Kontrolör simulink tasarımı 
+QUESTION1C.slx -> İzleyici simulink tasarımı
+QUESTION3.slx -> 3. soru simulink tasarımı
